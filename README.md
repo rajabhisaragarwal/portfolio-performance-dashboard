@@ -24,6 +24,9 @@ Built as part of my journey learning quantitative finance and Python.
 ### Summary Metrics
 ![Summary Metrics](summary_metrics.png)
 
+### Correlation Heatmap
+![Correlation Heatmap](heatmap.png)
+
 ## How to Run
 
 1. Clone this repository or download the files
