@@ -1,5 +1,5 @@
 # 📈 Portfolio Performance Dashboard
-A Python-based tool that pulls real historical market data and calculates institutional-grade performance metrics for any portfolio of stocks and ETFs. 
+A Python-based tool that pulls real historical market data and calculates institutional-grade performance metrics for any portfolio of stocks. 
 Built as part of my journey learning quantitative finance and Python.
 ## Features
 - User inputs any tickers and date range at runtime — no code changes required
