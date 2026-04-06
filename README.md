@@ -16,7 +16,7 @@ Built as part of my journey learning quantitative finance and Python.
 ## Illustration of the Final Output
 
 ### Cumulative Returns
-![Cumulative Returns](cumulative_returns.png)
+![Cumulative Returns](returns.png)
 
 ### Drawdown Chart
 ![Drawdown](drawdown.png)
