@@ -3,3 +3,4 @@ yfinance
 pandas>=2.2.2
 numpy
 matplotlib
+plotly
