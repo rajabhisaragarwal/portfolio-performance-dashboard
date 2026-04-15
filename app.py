@@ -12,7 +12,8 @@ st.set_page_config(
 )
 
 st.title("📈 Portfolio Performance Dashboard")
-st.markdown("Analyze any portfolio of stocks & ETFs with institutional-grade metrics: Cumulative Returns, Maximum Drawdown, Sharpe Ratio, Volatility & Correlation Heatmpa.")
+st.markdown("Analyze any portfolio of stocks & ETFs with institutional-grade metrics.")
+st.markdown("📊 Cumulative Returns &nbsp;·&nbsp; 📉 Max Drawdown &nbsp;·&nbsp; ⚡ Sharpe Ratio &nbsp;·&nbsp; 🌊 Volatility &nbsp;·&nbsp; 🔥 Correlation Heatmap")
 st.divider()
 
 st.subheader("⚙️ Configure Your Portfolio")
