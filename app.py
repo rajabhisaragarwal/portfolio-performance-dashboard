@@ -15,38 +15,70 @@ st.title("📈 Portfolio Performance Dashboard")
 st.markdown("Analyze any portfolio of stocks & ETFs with institutional-grade metrics.")
 st.divider()
 
-st.subheader("Configure Your Portfolio")
+st.subheader("⚙️ Configure Your Portfolio")
 
-tickers_input = st.text_input("Enter tickers separated by commas", "AAPL, MSFT, GOOGL, JPM, SPY")
+tickers_input = st.text_input(
+    "Tickers",
+    placeholder="Enter tickers separated by commas e.g. AAPL, MSFT, GOOGL, JPM"
+)
 tickers = [t.strip().upper() for t in tickers_input.split(',')]
 
 col1, col2 = st.columns(2)
 with col1:
     start_date = st.date_input("Start Date", value=pd.Timestamp('2020-01-01'))
 with col2:
-    end_date = st.date_input("End Date", value=pd.Timestamp('2024-12-31'))
+    end_date = st.date_input("End Date", value=pd.Timestamp('2025-12-31'))
 
-weights_input = st.text_input("Enter weights as percentages matching ticker order e.g. 20, 20, 20, 20, 20", "20, 20, 20, 20, 20")
-weights_pct = [float(w.strip()) for w in weights_input.split(',')]
+weights_input = st.text_input(
+    "Portfolio Weights",
+    placeholder="Enter weights as percentages matching ticker order e.g. 25, 25, 25, 25"
+)
+
+weights_pct = [float(w.strip()) for w in weights_input.split(',') if w.strip()]
 
 col3, col4 = st.columns(2)
 with col3:
-    benchmark = st.selectbox("Benchmark", ['SPY', 'QQQ', 'IWM', 'VTI'])
+    benchmark_choice = st.selectbox("Benchmark", [
+        'SPY — S&P 500',
+        'QQQ — Nasdaq-100',
+        'IWM — Russell 2000',
+        'VTI — Total US Market',
+        'IWD — Russell 1000 Value',
+        'IWF — Russell 1000 Growth',
+        'Other (enter manually)'
+    ])
+    if benchmark_choice == 'Other (enter manually)':
+        benchmark = st.text_input("Enter benchmark ticker", placeholder="e.g. IWV, SPYG").strip().upper()
+    else:
+        benchmark = benchmark_choice.split(' — ')[0]
 with col4:
-    risk_free = st.number_input("Risk-Free Rate (%)", min_value=0.0, max_value=15.0, value=4.5, step=0.1) / 100
+    risk_free = st.number_input("Risk-Free Rate (%)", min_value=0.0, max_value=15.0, value=4.5, step=0.05) / 100
 
 st.divider()
 
-if round(sum(weights_pct), 2) != 100.0:
-    st.error(f"⚠️ Weights sum to {sum(weights_pct)}%. Must equal 100%. Please adjust above.")
-    st.stop()
+if st.button("🚀 Run Analysis"):
+    if not tickers_input.strip():
+        st.error("⚠️ Please enter at least one ticker.")
+        st.stop()
+    if not weights_input.strip():
+        st.error("⚠️ Please enter portfolio weights.")
+        st.stop()
+    if round(sum(weights_pct), 2) != 100.0:
+        st.error(f"⚠️ Weights sum to {sum(weights_pct)}%. Must equal 100%.")
+        st.stop()
+    if benchmark_choice == 'Other (enter manually)' and not benchmark:
+        st.error("⚠️ Please enter a custom benchmark ticker.")
+        st.stop()
 
-weights = [w / 100 for w in weights_pct]
+    weights = [w / 100 for w in weights_pct]
+    all_tickers = list(dict.fromkeys(tickers + [benchmark]))
 
-all_tickers = list(dict.fromkeys(tickers + [benchmark]))
+    with st.spinner('⏳ Fetching market data...'):
+        import time
+        time.sleep(2)
+        prices = yf.download(all_tickers, start=start_date, end=end_date, auto_adjust=False)['Adj Close']
 
-with st.spinner('Fetching market data...'):
-    prices = yf.download(all_tickers, start=start_date, end=end_date, auto_adjust=False)['Adj Close']
+    st.success("✅ Analysis complete!")
 
 returns = prices.pct_change().dropna()
 
