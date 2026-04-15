@@ -12,14 +12,14 @@ st.set_page_config(
 )
 
 st.title("📈 Portfolio Performance Dashboard")
-st.markdown("Analyze any portfolio of stocks & ETFs with institutional-grade metrics.")
+st.markdown("Analyze any portfolio of stocks & ETFs with institutional-grade metrics: Cumulative Returns, Maximum Drawdown, Sharpe Ratio, Volatility & Correlation Heatmpa.")
 st.divider()
 
 st.subheader("⚙️ Configure Your Portfolio")
 
 tickers_input = st.text_input(
     "Tickers",
-    placeholder="Enter tickers separated by commas e.g. AAPL, MSFT, GOOGL, JPM"
+    placeholder="Enter tickers separated by commas (e.g. AAPL, MSFT, GOOGL, JPM)"
 )
 tickers = [t.strip().upper() for t in tickers_input.split(',')]
 
@@ -31,7 +31,7 @@ with col2:
 
 weights_input = st.text_input(
     "Portfolio Weights",
-    placeholder="Enter weights as percentages matching ticker order e.g. 25, 25, 25, 25"
+    placeholder="Enter weights as percentages matching ticker order (e.g. 25, 25, 25, 25)"
 )
 
 weights_pct = [float(w.strip()) for w in weights_input.split(',') if w.strip()]
