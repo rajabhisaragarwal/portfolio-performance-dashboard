@@ -131,73 +131,144 @@ if st.button("🚀 Run Analysis"):
     
     st.subheader("Visualizations")
     
-    tab1, tab2, tab3, tab4 = st.tabs(["Cumulative Returns", "Drawdown", "Summary Metrics", "Correlation Heatmap"])
+    st.subheader("📈 Cumulative Returns")
+
+    colormap = plt.colormaps['tab20'].resampled(len(tickers))
+    holding_colors = [colormap(i) for i in range(len(tickers))]
     
-    with tab1:
-        colormap = plt.colormaps['tab20'].resampled(len(tickers))
-        holding_colors = [colormap(i) for i in range(len(tickers))]
+    fig1 = go.Figure()
     
-        fig, ax = plt.subplots(figsize=(14, 6))
-        for i, ticker in enumerate(tickers):
-            ax.plot(cumulative.index, cumulative[ticker],
-                    color=holding_colors[i], linewidth=1.5, alpha=0.75, label=ticker)
-        ax.plot(cumulative.index, benchmark_cumulative,
-                color='#D85A30', linewidth=2.5, label=f'Benchmark ({benchmark})')
-        ax.plot(cumulative.index, portfolio_cumulative,
-                color='#1D9E75', linewidth=3.5, label='My Portfolio')
-        ax.set_title('Cumulative Returns')
-        ax.set_ylabel('Growth of $1')
-        ax.axhline(y=1, color='#2C2C2A', linestyle='--', linewidth=0.8)
-        ax.legend(loc='upper left', fontsize=9)
-        plt.tight_layout()
-        st.pyplot(fig)
+    for i, ticker in enumerate(tickers):
+        r, g, b, _ = holding_colors[i]
+        color = f'rgb({int(r*255)},{int(g*255)},{int(b*255)})'
+        fig1.add_trace(go.Scatter(
+            x=cumulative.index,
+            y=cumulative[ticker],
+            name=ticker,
+            line=dict(color=color, width=1.5),
+            opacity=0.75
+        ))
+
+    fig1.add_trace(go.Scatter(
+        x=cumulative.index,
+        y=benchmark_cumulative,
+        name=f'Benchmark ({benchmark})',
+        line=dict(color='#D85A30', width=2.5)
+    ))
     
-    with tab2:
-        fig, ax = plt.subplots(figsize=(14, 6))
-        drawdown.plot(ax=ax, linewidth=1.2, alpha=0.75)
-        portfolio_drawdown_series.plot(ax=ax, color='#1D9E75', linewidth=3, label='My Portfolio')
-        ax.set_title('Drawdown from Peak')
-        ax.set_ylabel('Drawdown')
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
-        ax.axhline(y=0, color='black', linestyle='--', linewidth=0.8)
-        ax.legend(loc='lower left', fontsize=9)
-        plt.tight_layout()
-        st.pyplot(fig)
+    fig1.add_trace(go.Scatter(
+        x=cumulative.index,
+        y=portfolio_cumulative,
+        name='My Portfolio',
+        line=dict(color='#1D9E75', width=4)
+    ))
     
-    with tab3:
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-        metrics = ['Total Return', 'Volatility', 'Sharpe Ratio', 'Max Drawdown']
-        for i, metric in enumerate(metrics):
-            ax = axes[i // 2, i % 2]
-            summary_full[metric].plot(kind='bar', ax=ax,
-                                       color=['#1D9E75' if x == 'My Portfolio'
-                                              else '#D85A30' if x == benchmark
-                                              else '#378ADD' for x in summary_full.index],
-                                       edgecolor='white')
-            ax.set_title(metric)
-            ax.set_xlabel('')
-            ax.tick_params(axis='x', rotation=45)
-            ax.axhline(y=0, color='black', linewidth=0.8)
-        plt.suptitle('Portfolio Summary Metrics', fontsize=16, fontweight='bold', y=1.01)
-        plt.tight_layout()
-        st.pyplot(fig)
+    fig1.update_layout(
+        title='Portfolio vs Benchmark — Cumulative Returns',
+        yaxis_title='Growth of $1',
+        xaxis_title='Date',
+        hovermode='x unified',
+        height=500,
+        dragmode=False,
+    xaxis=dict(fixedrange=True),
+    )
     
-    with tab4:
-        correlation = returns[tickers].corr()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        im = ax.imshow(correlation, cmap='RdYlGn', vmin=-1, vmax=1)
-        ax.set_xticks(range(len(tickers)))
-        ax.set_yticks(range(len(tickers)))
-        ax.set_xticklabels(tickers, rotation=45, ha='right')
-        ax.set_yticklabels(tickers)
-        for i in range(len(tickers)):
-            for j in range(len(tickers)):
-                ax.text(j, i, round(correlation.iloc[i, j], 2),
-                        ha='center', va='center', fontsize=9)
-        plt.colorbar(im, ax=ax)
-        ax.set_title('Correlation Heatmap')
-        plt.tight_layout()
-        st.pyplot(fig)
+    st.plotly_chart(fig1, use_container_width=True)
+    st.divider()
     
+    st.subheader("📉 Drawdown from Peak")
+
+    fig2 = go.Figure()
+    
+    for i, ticker in enumerate(tickers):
+        r, g, b, _ = holding_colors[i]
+        color = f'rgb({int(r*255)},{int(g*255)},{int(b*255)})'
+        fig2.add_trace(go.Scatter(
+            x=drawdown.index,
+            y=drawdown[ticker],
+            name=ticker,
+            line=dict(color=color, width=1.5),
+            opacity=0.75
+        ))
+    
+    fig2.add_trace(go.Scatter(
+        x=portfolio_drawdown_series.index,
+        y=portfolio_drawdown_series,
+        name='My Portfolio',
+        line=dict(color='#1D9E75', width=4)
+    ))
+    
+    fig2.update_layout(
+        title='Drawdown from Peak',
+        yaxis_title='Drawdown',
+        xaxis_title='Date',
+        yaxis_tickformat='.0%',
+        hovermode='x unified',
+        height=500,
+        dragmode=False,
+        xaxis=dict(fixedrange=True),
+        yaxis=dict(fixedrange=True)
+    )
+    
+    st.plotly_chart(fig2, use_container_width=True)
+    st.divider()
+    
+    st.subheader("📊 Summary Metrics")
+
+    colors_bar = [
+        '#1D9E75' if x == 'My Portfolio'
+        else '#D85A30' if x == benchmark
+        else '#378ADD'
+        for x in summary_full.index
+    ]
+    
+    metrics = ['Total Return', 'Volatility', 'Sharpe Ratio', 'Max Drawdown']
+    
+    for metric in metrics:
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=summary_full.index.tolist(),
+            y=summary_full[metric].tolist(),
+            marker_color=colors_bar,
+            text=[f'{v:.2%}' if metric != 'Sharpe Ratio' else f'{v:.2f}'
+                  for v in summary_full[metric]],
+            textposition='outside'
+        ))
+        fig.update_layout(
+            title=metric,
+            height=350,
+            dragmode=False,
+            xaxis=dict(fixedrange=True),
+            yaxis=dict(fixedrange=True)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    st.divider()
+    
+    st.subheader("🔥 Correlation Heatmap")
+
+    correlation = returns[tickers].corr()
+    
+    fig4 = go.Figure(data=go.Heatmap(
+        z=correlation.values,
+        x=correlation.columns.tolist(),
+        y=correlation.index.tolist(),
+        colorscale='RdYlGn',
+        zmin=-1,
+        zmax=1,
+        text=correlation.round(2).values,
+        texttemplate='%{text}',
+        showscale=True
+    ))
+    
+    fig4.update_layout(
+        title='Correlation Heatmap',
+        height=500,
+        dragmode=False,
+        xaxis=dict(fixedrange=True),
+        yaxis=dict(fixedrange=True)
+    )
+    
+    st.plotly_chart(fig4, use_container_width=True)
     st.divider()
     st.caption("Data sourced from Yahoo Finance via yfinance | Built with Python & Streamlit")
