@@ -80,122 +80,122 @@ if st.button("🚀 Run Analysis"):
 
     st.success("✅ Analysis complete!")
 
-returns = prices.pct_change().dropna()
+    returns = prices.pct_change().dropna()
 
-cumulative = (1 + returns).cumprod()
-rolling_max = cumulative.cummax()
-drawdown = (cumulative - rolling_max) / rolling_max
+    cumulative = (1 + returns).cumprod()
+    rolling_max = cumulative.cummax()
+    drawdown = (cumulative - rolling_max) / rolling_max
 
-portfolio_returns = returns[tickers].dot(weights)
-portfolio_cumulative = (1 + portfolio_returns).cumprod()
-benchmark_cumulative = cumulative[benchmark]
-portfolio_drawdown_series = (portfolio_cumulative - portfolio_cumulative.cummax()) / portfolio_cumulative.cummax()
+    portfolio_returns = returns[tickers].dot(weights)
+    portfolio_cumulative = (1 + portfolio_returns).cumprod()
+    benchmark_cumulative = cumulative[benchmark]
+    portfolio_drawdown_series = (portfolio_cumulative - portfolio_cumulative.cummax()) / portfolio_cumulative.cummax()
 
-total_return = (1 + returns).prod() - 1
-volatility = returns.std() * np.sqrt(252)
-sharpe = (returns.mean() * 252 - risk_free) / volatility
-max_drawdown = drawdown.min()
+    total_return = (1 + returns).prod() - 1
+    volatility = returns.std() * np.sqrt(252)
+    sharpe = (returns.mean() * 252 - risk_free) / volatility
+    max_drawdown = drawdown.min()
+    
+    summary = pd.DataFrame({
+        'Total Return': total_return.round(4),
+        'Volatility': volatility.round(4),
+        'Sharpe Ratio': sharpe.round(4),
+        'Max Drawdown': max_drawdown.round(4)
+    })
 
-summary = pd.DataFrame({
-    'Total Return': total_return.round(4),
-    'Volatility': volatility.round(4),
-    'Sharpe Ratio': sharpe.round(4),
-    'Max Drawdown': max_drawdown.round(4)
-})
-
-portfolio_row = pd.DataFrame({
-    'Total Return': [round((1 + portfolio_returns).prod() - 1, 4)],
-    'Volatility': [round(portfolio_returns.std() * np.sqrt(252), 4)],
-    'Sharpe Ratio': [round((portfolio_returns.mean() * 252 - risk_free) / (portfolio_returns.std() * np.sqrt(252)), 4)],
-    'Max Drawdown': [round(portfolio_drawdown_series.min(), 4)]
-}, index=['My Portfolio'])
-
-summary_full = pd.concat([summary, portfolio_row])
-
-st.subheader("Portfolio Summary")
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.metric("Total Return", f"{round(portfolio_row['Total Return'].values[0] * 100, 2)}%")
-with col2:
-    st.metric("Volatility", f"{round(portfolio_row['Volatility'].values[0] * 100, 2)}%")
-with col3:
-    st.metric("Sharpe Ratio", f"{round(portfolio_row['Sharpe Ratio'].values[0], 2)}")
-with col4:
-    st.metric("Max Drawdown", f"{round(portfolio_row['Max Drawdown'].values[0] * 100, 2)}%")
-
-st.divider()
-
-st.subheader("Visualizations")
-
-tab1, tab2, tab3, tab4 = st.tabs(["Cumulative Returns", "Drawdown", "Summary Metrics", "Correlation Heatmap"])
-
-with tab1:
-    colormap = plt.colormaps['tab20'].resampled(len(tickers))
-    holding_colors = [colormap(i) for i in range(len(tickers))]
-
-    fig, ax = plt.subplots(figsize=(14, 6))
-    for i, ticker in enumerate(tickers):
-        ax.plot(cumulative.index, cumulative[ticker],
-                color=holding_colors[i], linewidth=1.5, alpha=0.75, label=ticker)
-    ax.plot(cumulative.index, benchmark_cumulative,
-            color='#D85A30', linewidth=2.5, label=f'Benchmark ({benchmark})')
-    ax.plot(cumulative.index, portfolio_cumulative,
-            color='#1D9E75', linewidth=3.5, label='My Portfolio')
-    ax.set_title('Cumulative Returns')
-    ax.set_ylabel('Growth of $1')
-    ax.axhline(y=1, color='#2C2C2A', linestyle='--', linewidth=0.8)
-    ax.legend(loc='upper left', fontsize=9)
-    plt.tight_layout()
-    st.pyplot(fig)
-
-with tab2:
-    fig, ax = plt.subplots(figsize=(14, 6))
-    drawdown.plot(ax=ax, linewidth=1.2, alpha=0.75)
-    portfolio_drawdown_series.plot(ax=ax, color='#1D9E75', linewidth=3, label='My Portfolio')
-    ax.set_title('Drawdown from Peak')
-    ax.set_ylabel('Drawdown')
-    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
-    ax.axhline(y=0, color='black', linestyle='--', linewidth=0.8)
-    ax.legend(loc='lower left', fontsize=9)
-    plt.tight_layout()
-    st.pyplot(fig)
-
-with tab3:
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    metrics = ['Total Return', 'Volatility', 'Sharpe Ratio', 'Max Drawdown']
-    for i, metric in enumerate(metrics):
-        ax = axes[i // 2, i % 2]
-        summary_full[metric].plot(kind='bar', ax=ax,
-                                   color=['#1D9E75' if x == 'My Portfolio'
-                                          else '#D85A30' if x == benchmark
-                                          else '#378ADD' for x in summary_full.index],
-                                   edgecolor='white')
-        ax.set_title(metric)
-        ax.set_xlabel('')
-        ax.tick_params(axis='x', rotation=45)
-        ax.axhline(y=0, color='black', linewidth=0.8)
-    plt.suptitle('Portfolio Summary Metrics', fontsize=16, fontweight='bold', y=1.01)
-    plt.tight_layout()
-    st.pyplot(fig)
-
-with tab4:
-    correlation = returns[tickers].corr()
-    fig, ax = plt.subplots(figsize=(10, 8))
-    im = ax.imshow(correlation, cmap='RdYlGn', vmin=-1, vmax=1)
-    ax.set_xticks(range(len(tickers)))
-    ax.set_yticks(range(len(tickers)))
-    ax.set_xticklabels(tickers, rotation=45, ha='right')
-    ax.set_yticklabels(tickers)
-    for i in range(len(tickers)):
-        for j in range(len(tickers)):
-            ax.text(j, i, round(correlation.iloc[i, j], 2),
-                    ha='center', va='center', fontsize=9)
-    plt.colorbar(im, ax=ax)
-    ax.set_title('Correlation Heatmap')
-    plt.tight_layout()
-    st.pyplot(fig)
-
-st.divider()
-st.caption("Data sourced from Yahoo Finance via yfinance | Built with Python & Streamlit")
+    portfolio_row = pd.DataFrame({
+        'Total Return': [round((1 + portfolio_returns).prod() - 1, 4)],
+        'Volatility': [round(portfolio_returns.std() * np.sqrt(252), 4)],
+        'Sharpe Ratio': [round((portfolio_returns.mean() * 252 - risk_free) / (portfolio_returns.std() * np.sqrt(252)), 4)],
+        'Max Drawdown': [round(portfolio_drawdown_series.min(), 4)]
+    }, index=['My Portfolio'])
+    
+    summary_full = pd.concat([summary, portfolio_row])
+    
+    st.subheader("Portfolio Summary")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Return", f"{round(portfolio_row['Total Return'].values[0] * 100, 2)}%")
+    with col2:
+        st.metric("Volatility", f"{round(portfolio_row['Volatility'].values[0] * 100, 2)}%")
+    with col3:
+        st.metric("Sharpe Ratio", f"{round(portfolio_row['Sharpe Ratio'].values[0], 2)}")
+    with col4:
+        st.metric("Max Drawdown", f"{round(portfolio_row['Max Drawdown'].values[0] * 100, 2)}%")
+    
+    st.divider()
+    
+    st.subheader("Visualizations")
+    
+    tab1, tab2, tab3, tab4 = st.tabs(["Cumulative Returns", "Drawdown", "Summary Metrics", "Correlation Heatmap"])
+    
+    with tab1:
+        colormap = plt.colormaps['tab20'].resampled(len(tickers))
+        holding_colors = [colormap(i) for i in range(len(tickers))]
+    
+        fig, ax = plt.subplots(figsize=(14, 6))
+        for i, ticker in enumerate(tickers):
+            ax.plot(cumulative.index, cumulative[ticker],
+                    color=holding_colors[i], linewidth=1.5, alpha=0.75, label=ticker)
+        ax.plot(cumulative.index, benchmark_cumulative,
+                color='#D85A30', linewidth=2.5, label=f'Benchmark ({benchmark})')
+        ax.plot(cumulative.index, portfolio_cumulative,
+                color='#1D9E75', linewidth=3.5, label='My Portfolio')
+        ax.set_title('Cumulative Returns')
+        ax.set_ylabel('Growth of $1')
+        ax.axhline(y=1, color='#2C2C2A', linestyle='--', linewidth=0.8)
+        ax.legend(loc='upper left', fontsize=9)
+        plt.tight_layout()
+        st.pyplot(fig)
+    
+    with tab2:
+        fig, ax = plt.subplots(figsize=(14, 6))
+        drawdown.plot(ax=ax, linewidth=1.2, alpha=0.75)
+        portfolio_drawdown_series.plot(ax=ax, color='#1D9E75', linewidth=3, label='My Portfolio')
+        ax.set_title('Drawdown from Peak')
+        ax.set_ylabel('Drawdown')
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
+        ax.axhline(y=0, color='black', linestyle='--', linewidth=0.8)
+        ax.legend(loc='lower left', fontsize=9)
+        plt.tight_layout()
+        st.pyplot(fig)
+    
+    with tab3:
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+        metrics = ['Total Return', 'Volatility', 'Sharpe Ratio', 'Max Drawdown']
+        for i, metric in enumerate(metrics):
+            ax = axes[i // 2, i % 2]
+            summary_full[metric].plot(kind='bar', ax=ax,
+                                       color=['#1D9E75' if x == 'My Portfolio'
+                                              else '#D85A30' if x == benchmark
+                                              else '#378ADD' for x in summary_full.index],
+                                       edgecolor='white')
+            ax.set_title(metric)
+            ax.set_xlabel('')
+            ax.tick_params(axis='x', rotation=45)
+            ax.axhline(y=0, color='black', linewidth=0.8)
+        plt.suptitle('Portfolio Summary Metrics', fontsize=16, fontweight='bold', y=1.01)
+        plt.tight_layout()
+        st.pyplot(fig)
+    
+    with tab4:
+        correlation = returns[tickers].corr()
+        fig, ax = plt.subplots(figsize=(10, 8))
+        im = ax.imshow(correlation, cmap='RdYlGn', vmin=-1, vmax=1)
+        ax.set_xticks(range(len(tickers)))
+        ax.set_yticks(range(len(tickers)))
+        ax.set_xticklabels(tickers, rotation=45, ha='right')
+        ax.set_yticklabels(tickers)
+        for i in range(len(tickers)):
+            for j in range(len(tickers)):
+                ax.text(j, i, round(correlation.iloc[i, j], 2),
+                        ha='center', va='center', fontsize=9)
+        plt.colorbar(im, ax=ax)
+        ax.set_title('Correlation Heatmap')
+        plt.tight_layout()
+        st.pyplot(fig)
+    
+    st.divider()
+    st.caption("Data sourced from Yahoo Finance via yfinance | Built with Python & Streamlit")
