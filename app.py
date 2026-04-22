@@ -14,6 +14,8 @@ st.set_page_config(
 
 st.title("📈 Portfolio Performance Dashboard")
 st.markdown("Analyze any portfolio of stocks & ETFs with institutional-grade metrics.")
+st.markdown("Important: This tool supports either US stocks/ETFs or Indian stocks/ETFs (NSE/BSE) in a single run. Do not mix both — currency differences (USD vs INR) will produce misleading results.")
+st.markdown("Indian stocks: append .NS (NSE) or .BO (BSE) — e.g. RELIANCE.NS, HDFCBANK.NS")
 st.markdown("📊 Cumulative Returns &nbsp;·&nbsp; 📉 Max Drawdown &nbsp;·&nbsp; ⚡ Sharpe Ratio &nbsp;·&nbsp; 🌊 Volatility &nbsp;·&nbsp; 🔥 Correlation Heatmap")
 st.divider()
 
