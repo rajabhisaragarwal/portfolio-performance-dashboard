@@ -49,6 +49,11 @@ with col3:
         'VTI — Total US Market',
         'IWD — Russell 1000 Value',
         'IWF — Russell 1000 Growth',
+        '^NSEI — NIFTY 50',
+        '^BSESN — BSE SENSEX',
+        'NIFTYMIDCAP150.NS — NIFTY Midcap 150',
+        'NIFTYSMLCAP250.NS — NIFTY Smallcap 250',
+        '^CRSLDX — NIFTY 500',
         'Other (enter manually)'
     ])
     if benchmark_choice == 'Other (enter manually)':
