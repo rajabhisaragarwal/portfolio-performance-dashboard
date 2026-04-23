@@ -72,11 +72,11 @@ if st.button("🚀 Run Analysis"):
     if not weights_input.strip():
         st.error("⚠️ Please enter portfolio weights.")
         st.stop()
+    if len(weights_pct) != len(tickers):
+        st.error(f"⚠️ You entered {len(tickers)} tickers but {len(weights_pct)} weights. These must match.")
+        st.stop()
     if round(sum(weights_pct), 2) != 100.0:
         st.error(f"⚠️ Weights sum to {sum(weights_pct)}%. Must equal 100%.")
-        st.stop()
-    if benchmark_choice == 'Other (enter manually)' and not benchmark:
-        st.error("⚠️ Please enter a custom benchmark ticker.")
         st.stop()
 
     weights = [w / 100 for w in weights_pct]
