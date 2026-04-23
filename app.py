@@ -78,6 +78,12 @@ if st.button("🚀 Run Analysis"):
     if round(sum(weights_pct), 2) != 100.0:
         st.error(f"⚠️ Weights sum to {sum(weights_pct)}%. Must equal 100%.")
         st.stop()
+    if end_date > date.today():
+        st.error(f"⚠️ End date cannot be in the future. Please select a date on or before {date.today()}.")
+        st.stop()
+    if start_date >= end_date:
+        st.error("⚠️ Start date must be before end date.")
+        st.stop()    
 
     weights = [w / 100 for w in weights_pct]
     all_tickers = list(dict.fromkeys(tickers + [benchmark]))
