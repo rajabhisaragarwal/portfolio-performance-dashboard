@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import plotly.graph_objects as go
+from datetime import date
 
 st.set_page_config(
     page_title="Portfolio Dashboard",
