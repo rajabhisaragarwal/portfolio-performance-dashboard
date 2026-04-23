@@ -86,7 +86,19 @@ if st.button("🚀 Run Analysis"):
         import time
         time.sleep(2)
         prices = yf.download(all_tickers, start=start_date, end=end_date, auto_adjust=False)['Adj Close']
-
+    
+    invalid_tickers = [t for t in all_tickers if t in prices.columns and prices[t].isna().all()]
+    missing_tickers = [t for t in all_tickers if t not in prices.columns]
+    bad_tickers = invalid_tickers + missing_tickers
+    
+    if bad_tickers:
+        st.error(f"⚠️ The following tickers could not be found: {', '.join(bad_tickers)}. Please check and try again.")
+        st.stop()
+    
+    if prices.empty:
+        st.error("⚠️ No data returned. Please check your tickers and date range.")
+        st.stop()
+    
     st.success("✅ Analysis complete!")
 
     returns = prices.pct_change().dropna()
